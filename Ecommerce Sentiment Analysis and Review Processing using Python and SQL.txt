@@ -1,0 +1,288 @@
+Settings.py
+
+import nltk
+import unicodedata
+from nltk import LancasterStemmer, WordNetLemmatizer
+from nltk.corpus import stopwords
+
+import re
+
+def remove_non_ascii(words):
+    """Remove non-ASCII characters from list of tokenized words"""
+    new_words = []
+    for word in words:
+        new_word = unicodedata.normalize('NFKD', word).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+        new_words.append(new_word)
+    return new_words
+
+def to_lowercase(words):
+    """Convert all characters to lowercase from list of tokenized words"""
+    new_words = []
+    for word in words:
+        new_word = word.lower()
+        new_words.append(new_word)
+    return new_words
+
+def remove_punctuation(words):
+    """Remove punctuation from list of tokenized words"""
+    new_words = []
+    for word in words:
+        new_word = re.sub(r'[^\w\s]', '', word)
+        if new_word != '':
+            new_words.append(new_word)
+    return new_words
+
+def remove_numbers(words):
+    """Remove all interger occurrences in list of tokenized words with textual representation"""
+    new_words = []
+    for word in words:
+        new_word = re.sub("\d+", "", word)
+        if new_word != '':
+            new_words.append(new_word)
+    return new_words
+
+def remove_stopwords(words):
+    """Remove stop words from list of tokenized words"""
+    new_words = []
+    for word in words:
+        if word not in stopwords.words('english'):
+            new_words.append(word)
+    return new_words
+
+def stem_words(words):
+    """Stem words in list of tokenized words"""
+    stemmer = LancasterStemmer()
+    stems = []
+    for word in words:
+        stem = stemmer.stem(word)
+        stems.append(stem)
+    return stems
+
+def lemmatize_verbs(words):
+    """Lemmatize verbs in list of tokenized words"""
+    lemmatizer = WordNetLemmatizer()
+    lemmas = []
+    for word in words:
+        lemma = lemmatizer.lemmatize(word, pos='v')
+        lemmas.append(lemma)
+    return lemmas
+
+def normalize(words):
+    words = remove_non_ascii(words)
+    words = to_lowercase(words)
+    words = remove_punctuation(words)
+    words = remove_numbers(words)
+    # words = remove_stopwords(words)
+    return words
+
+Module 1: 
+Task 1)Load the data:
+ Read the ecommerce data using 'shopping.csv' through pandas library and return the dataset for the further analysis.
+
+import pandas as pd
+
+# Function to read the CSV file into a DataFrame
+def read_csv():
+    #read the shopping.csv file using pandas library and return it
+    df= pd.read_csv("shopping.csv") 
+    return df
+
+Task 2)Find the Duplicate Values:
+Here, We need to check for duplicate values in a dataset 'shopping' for each column.
+Finally, the counts of duplicated values are returned as a integer. This information can be useful in identifying duplicate data and deciding on appropriate strategies to deal with them, such as imputation or deletion.
+
+# Function to check for duplicate rows in the DataFrame
+def check_duplicates():
+    # do not edit the predefined function name
+    df = read_csv()
+    # Calculate the number of duplicate rows using the duplicated() method and sum them
+    return df.duplicated().sum()
+    pass
+
+Task 3)Remove the Duplicate Values:
+The function drop_duplicates() reads a DataFrame from a CSV file, removes any duplicate rows in the DataFrame, and returns the cleaned DataFrame without duplicates.
+# Function to drop duplicate rows from the DataFrame
+def drop_duplicates():
+    # do not edit the predefined function name
+    df = read_csv()
+    # Drop duplicate rows using the drop_duplicates() method with inplace=True
+    unique_data= df.drop_duplicates(inplace= True)
+    return df
+
+Task 4)Find the null values:
+The function check_null_values() reads a DataFrame, which has already been processed to remove duplicate rows, and calculates the sum of null (missing) values for each column in the DataFrame.
+# Function to check for null (missing) values in the DataFrame
+def check_null_values():
+    # do not edit the predefined function name
+    # Check for null values using the isnull() method and sum them for each column
+    df= read_csv()
+    null_values= df.isnull().sum()
+    return null_values
+
+Task 5)Remove the null values:
+The remove_null_values() function reads a DataFrame, which has already been processed to remove duplicate rows, and then drops any rows that contain null (missing) values from the DataFrame.
+# Function to remove rows containing null values from the DataFrame
+def remove_null_values():
+    # do not edit the predefined function name
+    # Drop rows containing null values using the dropna() method with inplace=True
+    df= drop_duplicates()
+    df= df.dropna()
+    return df
+
+Task 6) Renaming the column names:
+
+The rename_columns() function renames specific columns in the DataFrame to standardize the column names.
+
+The column names 'reviews.text', 'reviews.title', and 'reviews.date' are changed to 'reviews_text', 'reviews_title', and 'reviews_date', respectively, and the function returns the updated DataFrame with the renamed columns, which is now ready for further analysis with more intuitive and consistent column names.
+
+# Function to rename specific columns in the DataFrame
+def rename_columns():
+    # do not edit the predefined function name
+    df = remove_null_values()
+    # Rename columns 'reviews.text', 'reviews.title', and 'reviews.date' to 'reviews_text', 'reviews_title', and 'reviews_date' respectively
+    df.rename(columns= {'reviews.text':'reviews_text', 'reviews.title':'reviews_title', 'reviews.date':'reviews_date'}, inplace= True)
+    return df
+
+Module2: 
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+import numpy as np
+import module1 as t1
+import settings
+
+Task 1) Find the sentiment of the review:
+
+The sentiment() function performs sentiment analysis on the text reviews using the SentimentIntensityAnalyzer from the nltk.sentiment module. For each review in the 'reviews_text' column, the function calculates the sentiment score using the polarity_scores() method of the SentimentIntensityAnalyzer.
+
+If the positive sentiment score is greater than the negative sentiment score for a review, it assigns the value 'positive' to the 'sentiment' column; otherwise, it assigns 'negative'.
+
+The DataFrame is updated with the 'sentiment' column, reflecting the sentiment analysis results, and the function returns the DataFrame with the added 'sentiment' column, which can be further used for sentiment-based analysis and insights.
+
+Hint : The sentiment scores for each review text are calculated for "Positive," and "Negative," sentiments separately using dictionary indexing (["pos"], ["neg"]). This means that the code extracts and stores the two sentiment scores. From these two sentiment score whichever is greater is added to the sentimen column.
+def sentiment():
+
+    df = t1.rename_columns()
+    sentiments = SentimentIntensityAnalyzer()
+    # Create sentiment column
+    # Calculate sentiment scores for each review and assign 'positive' or 'negative' based on the scores
+    df['sentiment'] = df['reviews_text'].apply(lambda x: sentiments.polarity_scores(x))
+    df['sentiment'] = df['sentiment'].apply(lambda x: 'positive' if x['pos'] > x['neg'] else 'negative')
+
+    return df
+
+Task2) Processing the review:
+
+The process_text() function tokenizes the text reviews in the 'reviews_text' column using nltk.word_tokenize from the NLTK library. Next, it imports a module named settings, which presumably contains functions for text data preprocessing.
+
+The DataFrame's 'reviews_text' column is then processed through the settings.normalize function from the imported settings module. The normalize function likely performs additional text data preprocessing tasks such as converting text to lowercase, removing punctuation, handling stop words, and other text cleaning operations.
+
+Finally, the function returns the updated DataFrame with the 'reviews_text' column tokenized and preprocessed through the settings.normalize function. This DataFrame is now ready for further analysis, natural language processing tasks, and machine learning algorithms that require text data in a processed format.
+
+Hint : Use apply method for the both text processing step.
+
+def process_text():
+    df = sentiment()
+    # Tokenize the reviews_text column using nltk's word_tokenize function
+    df['reviews_text'] = df['reviews_text'].apply(lambda x: nltk.word_tokenize(x))
+
+    # Normalize the tokenized words using the normalize function from settings
+    df['reviews_text'] = df['reviews_text'].apply(lambda x: settings.normalize(x))
+
+    return df
+
+Task3)  Exporting the Cleaned Dataset:
+
+The function export_the_dataset() exports the cleaned DataFrame to a new CSV file named 'ecommerce.csv'. It uses the pandas library to write the data to the CSV file.
+def export_the_dataset():
+    # Call process_text() to get the cleaned dataset with sentiment analysis and tokenization
+    df = process_text()
+    # Export the cleaned dataset to a new CSV file named 'ecommerce.csv'. use index = False.
+    df.to_csv("ecommerce.csv", index= False)
+    return df
+
+# TASK 4: Load the Cleaned dataset 'ecommerce.csv' to the database provided.
+# follow the instruction in the Task 5 description and complete the task as per it.
+
+# check if mysql table is created using "ecommerce"
+# Use this final dataset and upload it on the provided database for performing analysis in MySQL
+# To run this task click on the terminal and click on the run project
+
+Module3::
+
+Task 1) How many values are there in the given dataset
+ Hint--The task is to fetch count of the rows in the given dataset.
+
+SELECT count(*) total_values FROM ecommerce ;
+
+Task2 ) Find out the unique brands in the given dataset
+ Hint--The task is to fetch unique brand names in the given dataset
+
+SELECT distinct brand FROM `ecommerce` 
+
+Task 3) Retrieve all records from the 'ecommerce' table where the brand is 'Amazon'.
+
+SELECT * FROM `ecommerce` where brand = 'amazon'
+
+Task 4) Retrieve all records from the 'ecommerce' table where the product reviews contain the word 'good' in their text.
+
+SELECT * FROM `ecommerce` where reviews_text like '%good%'
+
+Task 5) Provide a list of all products and their corresponding details from the 'ecommerce' table that belong to the 'Electronics' category.
+Hint : Use LIKE method in the query for categories.
+
+SELECT * FROM `ecommerce` where categories like '%electronics%'
+
+Task 6) Retrieve all records from the 'ecommerce' table where the products are categorized under 'Electronics' only as their primary category and the brand is 'Flipkart'.
+
+select * from ecommerce where primaryCategories in ('Electronics') and brand = 'flipkart'
+
+Task 7) Provide a summary of the number of positive and negative sentiments for each primary category in the 'ecommerce' table.
+
+select primaryCategories, sum(
+    case when sentiment= 'positive' then 1 else 0 
+    End) 'positive_count',
+    sum(
+        case when sentiment= 'negative' then 1 else 0
+    end)'negative_count'
+    from 
+    ecommerce 
+    Group by primaryCategories
+
+Task 8) Retrieve all records from the 'ecommerce' table where the sentiment in the product reviews is classified as 'positive'.
+
+SELECT * FROM `ecommerce` where sentiment = 'positive'
+
+Task 9) Provide a summary report for each brand in the 'ecommerce' table, including the total number of positive and negative sentiments in product reviews, the total number of reviews, and the percentage of positive and negative sentiments for each brand.
+
+ SELECT brand, count(reviews_text) as total_reviews, sum(
+    case when sentiment='positive' then 1 else 0 End)
+    'positive_total',
+    sum(case when sentiment='negative' then 1 else 0 end) 'negative_total', 
+    round((sum(case when sentiment='positive' then 1 else 0 end)/count(reviews_text))*100,2)
+    as positive_percentage,
+    round((sum(case when sentiment= 'negative' then 1 else 0 end)/count(reviews_text))*100,2)
+    as negative_percentage
+    from 
+    ecommerce
+    group by brand
+
+Task 10) Retrieve a count of products for each primary category in the 'ecommerce' table
+
+select primaryCategories, count(name) as total_products from ecommerce
+group by primaryCategories;
+
+Task 11) Retrieve all records from the 'ecommerce' table where the product name contains the word 'Tablet' as a substring
+
+select * from ecommerce where name like '%Tablet%'
+
+Task 12) Count the number of product reviews in the 'ecommerce' table where the text contains the word 'Alexa' as a substring.
+
+select count(reviews_text) as text_count from ecommerce where reviews_text like '%Alexa%'
+
+
+
+
+
+
+
+
