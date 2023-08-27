@@ -1,0 +1,74 @@
+Module3::
+
+Task 1) How many values are there in the given dataset
+ Hint--The task is to fetch count of the rows in the given dataset.
+
+SELECT count(*) total_values FROM ecommerce ;
+
+Task2 ) Find out the unique brands in the given dataset
+ Hint--The task is to fetch unique brand names in the given dataset
+
+SELECT distinct brand FROM `ecommerce` 
+
+Task 3) Retrieve all records from the 'ecommerce' table where the brand is 'Amazon'.
+
+SELECT * FROM `ecommerce` where brand = 'amazon'
+
+Task 4) Retrieve all records from the 'ecommerce' table where the product reviews contain the word 'good' in their text.
+
+SELECT * FROM `ecommerce` where reviews_text like '%good%'
+
+Task 5) Provide a list of all products and their corresponding details from the 'ecommerce' table that belong to the 'Electronics' category.
+Hint : Use LIKE method in the query for categories.
+
+SELECT * FROM `ecommerce` where categories like '%electronics%'
+
+Task 6) Retrieve all records from the 'ecommerce' table where the products are categorized under 'Electronics' only as their primary category and the brand is 'Flipkart'.
+
+select * from ecommerce where primaryCategories in ('Electronics') and brand = 'flipkart'
+
+Task 7) Provide a summary of the number of positive and negative sentiments for each primary category in the 'ecommerce' table.
+
+select primaryCategories, sum(
+    case when sentiment= 'positive' then 1 else 0 
+    End) 'positive_count',
+    sum(
+        case when sentiment= 'negative' then 1 else 0
+    end)'negative_count'
+    from 
+    ecommerce 
+    Group by primaryCategories
+
+Task 8) Retrieve all records from the 'ecommerce' table where the sentiment in the product reviews is classified as 'positive'.
+
+SELECT * FROM `ecommerce` where sentiment = 'positive'
+
+Task 9) Provide a summary report for each brand in the 'ecommerce' table, including the total number of positive and negative sentiments in product reviews, the total number of reviews, and the percentage of positive and negative sentiments for each brand.
+
+ SELECT brand, count(reviews_text) as total_reviews, sum(
+    case when sentiment='positive' then 1 else 0 End)
+    'positive_total',
+    sum(case when sentiment='negative' then 1 else 0 end) 'negative_total', 
+    round((sum(case when sentiment='positive' then 1 else 0 end)/count(reviews_text))*100,2)
+    as positive_percentage,
+    round((sum(case when sentiment= 'negative' then 1 else 0 end)/count(reviews_text))*100,2)
+    as negative_percentage
+    from 
+    ecommerce
+    group by brand
+
+Task 10) Retrieve a count of products for each primary category in the 'ecommerce' table
+
+select primaryCategories, count(name) as total_products from ecommerce
+group by primaryCategories;
+
+Task 11) Retrieve all records from the 'ecommerce' table where the product name contains the word 'Tablet' as a substring
+
+select * from ecommerce where name like '%Tablet%'
+
+Task 12) Count the number of product reviews in the 'ecommerce' table where the text contains the word 'Alexa' as a substring.
+
+select count(reviews_text) as text_count from ecommerce where reviews_text like '%Alexa%'
+
+
+
